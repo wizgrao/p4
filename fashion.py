@@ -43,6 +43,8 @@ model = Net()
 if cud:
     model = model.cuda()
 images, labels = next(iter(trainloader))
+if cud:
+    images, labels = images.cuda(), labels.cuda()
 
 grid = torchvision.utils.make_grid(images)
 writer.add_image('images', grid, 0)
