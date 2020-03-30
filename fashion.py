@@ -41,7 +41,6 @@ if __name__ == "__main__":
 
     wandb.init(project="cs194-proj4")
     model = Net() 
-    #wandb.watch(model)
 
     if cud:
         model = model.cuda()
@@ -49,11 +48,11 @@ if __name__ == "__main__":
     if cud:
         images, labels = images.cuda(), labels.cuda()
 
-    wandb.log({"inputs": [wandb.Image(i) for i in images]})
-
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+    wandb.watch(model)
+    wandb.log({"inputs": [wandb.Image(i) for i in images]})
     for epoch in range(10):  # loop over the dataset multiple times
         running_loss = 0
         print("Starting epoch %d" % (epoch))

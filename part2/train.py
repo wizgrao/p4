@@ -105,6 +105,39 @@ def test(testloader, net, criterion, device):
     print(losses / cnt)
     return (losses/cnt)
 
+def testwb(trainloader, valloader, net, criterion, device):
+    '''
+    Function for testing.
+    '''
+    losses = 0.
+    cnt = 0
+    with torch.no_grad():
+        net = net.eval()
+        for images, labels in tqdm(trainloader):
+            images = images.to(device)
+            labels = labels.to(device)
+            output = net(images)
+            loss = criterion(output, labels)
+            losses += loss.item()
+            cnt += 1
+    trainloss = losses / cnt
+
+    losses = 0.
+    cnt = 0
+    with torch.no_grad():
+        net = net.eval()
+        for images, labels in tqdm(valloader):
+            images = images.to(device)
+            labels = labels.to(device)
+            output = net(images)
+            loss = criterion(output, labels)
+            losses += loss.item()
+            cnt += 1
+    valloss = losses / cnt
+
+    wandb.log({"training loss": trainloss, "validation loss": valloss})
+    return (losses/cnt)
+
 
 def cal_AP(testloader, net, criterion, device):
     '''
@@ -165,11 +198,17 @@ def get_result(testloader, net, device, folder='output_train'):
             cnt += 1
 
 def main():
+    wandb.init(project="proj4-part2")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # TODO change data_range to include all train/evaluation/test data.
     # TODO adjust batch_size.
-    train_data = FacadeDataset(flag='train', data_range=(0,905), onehot=False)
+    dataset = FacadeDataset(flag='train', data_range=(0,905), onehot=False)
+    trainProportion = 0.8
+    trainSize = int(len(dataset)*trainProportion)
+    valSize = len(dataset) - trainSize
+    train_data, val_data = torch.utils.data.random_split(dataset, [trainSize, valSize])
     train_loader = DataLoader(train_data, batch_size=16)
+    val_loader = DataLoader(val_data, batch_size=16)
     test_data = FacadeDataset(flag='test_dev', data_range=(0,114), onehot=False)
     test_loader = DataLoader(test_data, batch_size=1)
     ap_data = FacadeDataset(flag='test_dev', data_range=(0,114), onehot=True)
@@ -179,14 +218,15 @@ def main():
     net = Net().to(device)
     criterion = nn.CrossEntropyLoss() #TODO decide loss
     optimizer = torch.optim.Adam(net.parameters(), 1e-3, weight_decay=1e-5)
+    wandb.watch(net)
 
     print('\nStart training')
     for epoch in range(100): #TODO decide epochs
         print('-----------------Epoch = %d-----------------' % (epoch+1))
         train(train_loader, net, criterion, optimizer, device, epoch+1)
         # TODO create your evaluation set, load the evaluation set and test on evaluation set
-        evaluation_loader = train_loader
-        test(evaluation_loader, net, criterion, device)
+        evaluation_loader = val_loader
+        testwb(train_loader, evaluation_loader, net, criterion, device)
 
     print('\nFinished Training, Testing on test set')
     test(test_loader, net, criterion, device)
