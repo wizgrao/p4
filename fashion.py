@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import wandb
 
-cud = False 
+cud = True 
 
 
 class Net(nn.Module):
