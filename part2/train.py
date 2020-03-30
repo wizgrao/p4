@@ -2,6 +2,7 @@ import os
 import time
 
 import cv2
+import wandb
 import matplotlib.pyplot as plt
 import numpy as np
 import png
