@@ -57,7 +57,7 @@ def per_class_accuracy(inputs, output, target):
     for t, p, i in zip(target, pred, inputs):
         total_class[t] += 1.0
         if t == p:
-            correct_class += 1.0
+            correct_class[t] += 1.0
             corr += [wandb.Image(i, caption="Predicted:%s Actual:%s"%(classes[p], classes[t]))]
         else:
             incorr += [wandb.Image(i, caption="Predicted:%s Actual:%s"%(classes[p], classes[t]))]
