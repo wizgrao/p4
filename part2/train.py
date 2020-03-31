@@ -38,11 +38,11 @@ class Net(nn.Module):
             nn.BatchNorm2d(256),
             nn.Conv2d(256, 512, 5, padding=2),
             nn.ReLU(),
-            nn.Upsample(scale_factor=2, mode='bilinear'),
+            nn.Upsample(scale_factor=2),
             nn.BatchNorm2d(512),
             nn.Conv2d(512, 512, 5, padding=2),
             nn.ReLU(),
-            nn.Upsample(scale_factor=2, mode='bilinear'),
+            nn.Upsample(scale_factor=2),
             nn.BatchNorm2d(512),
             nn.Conv2d(512, self.n_class, 3, padding=1),
             nn.ReLU(inplace=True)
@@ -219,12 +219,12 @@ def main():
 
     name = 'starter_net'
     net = Net().to(device)
-    criterion = nn.CrossEntropyLoss() #TODO decide loss
-    optimizer = torch.optim.Adam(net.parameters(), 1e-3, weight_decay=1e-5)
+    criterion = nn.CrossEntropyLoss() 
+    optimizer = torch.optim.Adam(net.parameters(), 1e-3, weight_decay=1e-3)
     wandb.watch(net)
 
     print('\nStart training')
-    for epoch in range(100): #TODO decide epochs
+    for epoch in range(60): #TODO decide epochs
         print('-----------------Epoch = %d-----------------' % (epoch+1))
         train(train_loader, net, criterion, optimizer, device, epoch+1)
         # TODO create your evaluation set, load the evaluation set and test on evaluation set
