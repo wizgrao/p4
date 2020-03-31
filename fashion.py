@@ -7,7 +7,7 @@ import torch.optim as optim
 import wandb
 import numpy as np
 
-cud = False 
+cud = True 
 
 classes = ["T-shirt/top",
   "Trouser",
@@ -87,10 +87,10 @@ if __name__ == "__main__":
     trainSize = int(len(dataset)*trainProportion)
     valSize = len(dataset) - trainSize
     trainset, valset = torch.utils.data.random_split(dataset, [trainSize, valSize])
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=8, shuffle=True)
-    valloader = torch.utils.data.DataLoader(valset, batch_size=8, shuffle=True)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
+    valloader = torch.utils.data.DataLoader(valset, batch_size=64, shuffle=True)
     testset = datasets.FashionMNIST('fashion_mnist_test', train=False, download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=8, shuffle=True)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=True)
 
     wandb.init(project="cs194-proj4")
     model = Net() 
@@ -127,7 +127,8 @@ if __name__ == "__main__":
             optimizer.step()
             running_accuracy += accuracy(outputs, labels).item()
             running_loss += loss.item()
-            if i % 1000 == 999:    # every 1000 mini-batches...
+            every = 100
+            if i % every == every - 1:
                 val_loss = 0
                 val_accuracy = 0
                 for inputss, labelss in valloader:
@@ -137,9 +138,9 @@ if __name__ == "__main__":
                     val_loss += criterion(outputss, labelss).item()
                     val_accuracy += accuracy(outputss, labelss).item()
 
-                wandb.log({"step": epoch*len(trainloader) + i, "train accuracy": running_accuracy/1000, "val accuracy": val_accuracy / len(valloader), "training loss": running_loss/1000, "validation loss": val_loss / len(valloader)})
+                wandb.log({"step": epoch*len(trainloader) + i, "train accuracy": running_accuracy/every, "val accuracy": val_accuracy / len(valloader), "training loss": running_loss/every, "validation loss": val_loss / len(valloader)})
 
-                print("losses %f %f" % (val_loss/len(valloader), running_loss/1000))
+                print("losses %f %f" % (val_loss/len(valloader), running_loss/every))
                 running_loss = 0.0
                 running_accuracy = 0.0
         torch.save(model.state_dict(), "model%d.model" % (epoch))
