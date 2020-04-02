@@ -38,13 +38,13 @@ class Net(nn.Module):
             nn.BatchNorm2d(256),
             nn.Conv2d(256, 512, 5, padding=2),
             nn.ReLU(),
-            nn.Upsample(scale_factor=2),
+            nn.Upsample(scale_factor=2, mode="bicubic"),
             nn.BatchNorm2d(512),
             nn.Conv2d(512, 512, 5, padding=2),
             nn.ReLU(),
-            nn.Upsample(scale_factor=2),
+            nn.Upsample(scale_factor=2, mode="bicubic"),
             nn.BatchNorm2d(512),
-            nn.Conv2d(512, self.n_class, 3, padding=1),
+            nn.Conv2d(512, self.n_class, 3, padding=2),
             nn.ReLU(inplace=True)
         )
 
@@ -117,6 +117,8 @@ def testwb(trainloader, valloader, net, criterion, device):
     with torch.no_grad():
         net = net.eval()
         for images, labels in tqdm(trainloader):
+            if cnt > 5:
+              continue  
             images = images.to(device)
             labels = labels.to(device)
             output = net(images)
@@ -130,6 +132,8 @@ def testwb(trainloader, valloader, net, criterion, device):
     with torch.no_grad():
         net = net.eval()
         for images, labels in tqdm(valloader):
+            if cnt > 10:
+              continue
             images = images.to(device)
             labels = labels.to(device)
             output = net(images)
@@ -220,7 +224,7 @@ def main():
     name = 'starter_net'
     net = Net().to(device)
     criterion = nn.CrossEntropyLoss() 
-    optimizer = torch.optim.Adam(net.parameters(), 1e-3, weight_decay=1e-3)
+    optimizer = torch.optim.Adam(net.parameters(), 1e-3, weight_decay=1e-5)
     wandb.watch(net)
 
     print('\nStart training')
